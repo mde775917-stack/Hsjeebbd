@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>My Telegram Mini App</title>
+
+  <!-- Telegram Mini App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- RichAds SDK -->
+  <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 24px;
+      background: #f4f6fb;
+      color: #222;
+    }
+
+    .card {
+      max-width: 360px;
+      margin: 30px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px #00000010;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #6c4df6;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #status {
+      font-size: 14px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>আমার Mini App</h2>
+    <p>বিজ্ঞাপন দেখতে নিচের বাটনে চাপ দিন।</p>
+
+    <button id="ad-button">বিজ্ঞাপন দেখুন</button>
+    <p id="status">অ্যাপ প্রস্তুত হচ্ছে...</p>
+  </div>
+
+  <script>
+    const status = document.getElementById("status");
+    const adButton = document.getElementById("ad-button");
+
+    let richadsController = null;
+
+    function initAds() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+
+      if (typeof window.TelegramAdsController !== "function") {
+        status.textContent =
+          "বিজ্ঞাপন SDK লোড হয়নি। পেজ রিফ্রেশ করুন।";
+        return;
+      }
+
+      try {
+        richadsController = new window.TelegramAdsController();
+
+        richadsController.initialize({
+          pubId: "1025776",
+          appId: "9310",
+          debug: true
+        });
+
+        status.textContent = "বিজ্ঞাপন সিস্টেম প্রস্তুত।";
+      } catch (error) {
+        console.error("RichAds initialization error:", error);
+        status.textContent =
+          "বিজ্ঞাপন চালু হয়নি। Console পরীক্ষা করুন।";
+      }
+    }
+
+    adButton.addEventListener("click", async () => {
+      if (!richadsController) {
+        status.textContent = "বিজ্ঞাপন সিস্টেম প্রস্তুত নয়।";
+        return;
+      }
+
+      adButton.disabled = true;
+      status.textContent = "বিজ্ঞাপন লোড হচ্ছে...";
+
+      try {
+        const result =
+          await richadsController.triggerInterstitialVideo();
+
+        console.log("RichAds result:", result);
+        status.textContent = "বিজ্ঞাপন অনুরোধ সম্পন্ন হয়েছে।";
+      } catch (error) {
+        console.error("RichAds ad error:", error);
+        status.textContent =
+          "এখন বিজ্ঞাপন পাওয়া যায়নি। পরে চেষ্টা করুন।";
+      } finally {
+        adButton.disabled = false;
+      }
+    });
+
+    window.addEventListener("load", initAds);
+  </script>
+</body>
+</html>
